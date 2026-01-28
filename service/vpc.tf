@@ -5,11 +5,6 @@ resource "google_compute_network" "vpc" {
   name                    = "wiz-dev-vpc"
   auto_create_subnetworks = false
   routing_mode            = "REGIONAL"
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-  }
 }
 
 # -----------------------------------------------------------------------------
