@@ -1,0 +1,5 @@
+project_id       = "your-gcp-project-id"
+region           = "asia-northeast1"
+github_org_repo  = "myorg/tf-gcp"
+github_branch    = "main"
+# github_environment = "production"  # 任意
