@@ -15,12 +15,6 @@ resource "google_compute_subnetwork" "public_1" {
   ip_cidr_range = "10.30.1.0/24"
   region        = var.region
   network       = google_compute_network.vpc.id
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-    Type    = "public"
-  }
 }
 
 resource "google_compute_subnetwork" "public_2" {
@@ -28,12 +22,6 @@ resource "google_compute_subnetwork" "public_2" {
   ip_cidr_range = "10.30.2.0/24"
   region        = var.region
   network       = google_compute_network.vpc.id
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-    Type    = "public"
-  }
 }
 
 # -----------------------------------------------------------------------------
@@ -45,12 +33,6 @@ resource "google_compute_subnetwork" "private_1" {
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-    Type    = "private"
-  }
 }
 
 resource "google_compute_subnetwork" "private_2" {
@@ -59,12 +41,6 @@ resource "google_compute_subnetwork" "private_2" {
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-    Type    = "private"
-  }
 }
 
 # -----------------------------------------------------------------------------
@@ -77,11 +53,6 @@ resource "google_compute_router" "nat_router" {
 
   bgp {
     asn = 64514
-  }
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
   }
 }
 
@@ -98,11 +69,6 @@ resource "google_compute_router_nat" "nat" {
   log_config {
     enable = true
     filter = "ERRORS_ONLY"
-  }
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
   }
 }
 
@@ -134,11 +100,6 @@ resource "google_compute_firewall" "allow_internal" {
     google_compute_subnetwork.private_1.ip_cidr_range,
     google_compute_subnetwork.private_2.ip_cidr_range,
   ]
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-  }
 }
 
 # SSH を許可（必要に応じて制限）
@@ -153,11 +114,6 @@ resource "google_compute_firewall" "allow_ssh" {
 
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["ssh"]
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-  }
 }
 
 # HTTP/HTTPS を許可（必要に応じて制限）
@@ -172,11 +128,6 @@ resource "google_compute_firewall" "allow_http_https" {
 
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["http-server", "https-server"]
-
-  labels = {
-    Project = "tf-gcp"
-    Env     = "dev"
-  }
 }
 
 # -----------------------------------------------------------------------------
