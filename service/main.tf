@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.6.0"
 
   backend "gcs" {
-    bucket = "tfstate-YOUR_PROJECT_ID-asia-n1" # state apply 後に実バケット名に変更
+    bucket = "tfstate-clgcporg98-p001-asia-n1" # state apply 後に実バケット名に変更
     prefix = "service/dev"
   }
 
