@@ -1,6 +1,7 @@
 variable "project_id" {
   description = "GCP プロジェクト ID"
   type        = string
+  default     = "clgcporg98-p001"
 }
 
 variable "region" {
@@ -10,8 +11,9 @@ variable "region" {
 }
 
 variable "github_org_repo" {
-  description = "GitHub org/repo (例: myorg/tf-gcp). Workload Identity の attribute mapping に使用"
+  description = "GitHub org/repo (例: uso6wiz/tf-gcp). Workload Identity の attribute mapping に使用"
   type        = string
+  default     = "uso6wiz/tf-gcp"
 }
 
 variable "github_branch" {

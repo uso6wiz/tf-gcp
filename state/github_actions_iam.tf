@@ -55,10 +55,20 @@ resource "google_project_iam_member" "terraform_apply" {
 }
 
 # Service Networking 用: プライベート VPC 接続（Cloud SQL 等）のピアリング作成に必要
-# roles/compute.networkAdmin には servicenetworking.services.addPeering 権限が含まれる
+# カスタムロールで servicenetworking.services.addPeering 権限を付与
+resource "google_project_iam_custom_role" "servicenetworking_peering" {
+  role_id     = "servicenetworking_peering"
+  title       = "Service Networking Peering"
+  description = "Custom role for Service Networking peering creation"
+  permissions = [
+    "servicenetworking.services.addPeering",
+    "compute.networks.updatePolicy",
+  ]
+}
+
 resource "google_project_iam_member" "servicenetworking" {
   project = var.project_id
-  role    = "roles/compute.networkAdmin"
+  role    = google_project_iam_custom_role.servicenetworking_peering.id
   member  = "serviceAccount:${google_service_account.github_actions_terraform.email}"
 }
 
