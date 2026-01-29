@@ -54,6 +54,14 @@ resource "google_project_iam_member" "terraform_apply" {
   member  = "serviceAccount:${google_service_account.github_actions_terraform.email}"
 }
 
+# Service Networking 用: プライベート VPC 接続（Cloud SQL 等）のピアリング作成に必要
+# roles/compute.networkAdmin には servicenetworking.services.addPeering 権限が含まれる
+resource "google_project_iam_member" "servicenetworking" {
+  project = var.project_id
+  role    = "roles/compute.networkAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions_terraform.email}"
+}
+
 # -----------------------------------------------------------------------------
 # Outputs（GitHub Actions ワークフローで使用）
 # -----------------------------------------------------------------------------

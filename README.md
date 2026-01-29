@@ -97,7 +97,7 @@ terraform plan -var="project_id=YOUR_PROJECT_ID"
 必要に応じて変数を設定できます：
 
 ```bash
-terraform plan -var="project_id=YOUR_PROJECT_ID" -var="region=asia-northeast1"
+terraform plan -var="project_id=YOUR_PROJECT_ID" -var="region=asia-northeast1" -var="db_password=your-db-password"
 ```
 
 5. インフラを適用します：
@@ -128,6 +128,17 @@ terraform apply
    - `service_account`: `terraform output -raw github_actions_service_account` の値
 
 `service/**` への push（例: `main`）で `terraform apply` が実行されます。
+
+### Cloud SQL（PostgreSQL）と uso8-blog-03
+
+- データベースは **Cloud SQL (PostgreSQL)** です。Compute Engine から **プライベート IP** で接続します。
+- `db_password` で Cloud SQL ユーザー `uso8` のパスワードを指定します。未指定時は `password` です。起動スクリプトに埋め込むため、`$` や `"` 等の特殊文字は避けてください。
+- **初回 apply 後**、Cloud Console > Cloud SQL > インスタンス `wiz-dev-blog-db` > 「データベース」で `blogdb` を選択し、**Query** から **postgres** で以下を実行してください（uso8 が schema/data を実行するため）：
+  ```sql
+  GRANT ALL ON SCHEMA public TO uso8;
+  GRANT ALL ON DATABASE blogdb TO uso8;
+  ```
+- GitHub Actions で `db_password` を渡す場合は、Secrets に `TF_VAR_db_password` を登録するか、ワークフローに `TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}` を追加してください。
 
 ### 注意事項
 
