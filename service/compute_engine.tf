@@ -15,74 +15,48 @@ resource "google_compute_address" "blog_app" {
   region       = var.region
 }
 
-# 起動スクリプト
+# 起動スクリプト（Cloud SQL プライベート IP 接続）
 locals {
-  startup_script = <<-EOF
+  startup_script = <<-EOS
 #!/bin/bash
 set -e
 
-# ログ出力
 exec > >(tee /var/log/startup.log)
 exec 2>&1
 
 echo "=== Starting setup at $(date) ==="
 
-# システム更新
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
 
-# Java 11 のインストール
-apt-get install -y openjdk-11-jdk
-
-# PostgreSQL のインストールとセットアップ
-apt-get install -y postgresql postgresql-contrib
-systemctl start postgresql
-systemctl enable postgresql
-
-# データベースとユーザーの作成
-sudo -u postgres psql <<PSQL
-CREATE DATABASE blogdb;
-CREATE USER uso8 WITH PASSWORD 'password';
-ALTER USER uso8 CREATEDB;
-GRANT ALL PRIVILEGES ON DATABASE blogdb TO uso8;
-\q
-PSQL
-
-# Git と curl のインストール
-apt-get install -y git curl unzip
+apt-get install -y openjdk-11-jdk git curl unzip
 
 # アプリケーションのクローン
 cd /opt
 if [ -d "uso8-blog-03" ]; then
   echo "Repository already exists, pulling latest..."
-  cd uso8-blog-03
-  git pull
+  cd uso8-blog-03 && git pull
 else
-  git clone https://github.com/uso6wiz/uso8-blog-03.git
-  cd uso8-blog-03
+  git clone https://github.com/uso6wiz/uso8-blog-03.git && cd uso8-blog-03
 fi
 
-# Gradle Wrapper に実行権限を付与
 chmod +x gradlew
-
-# アプリケーションのビルド
 echo "Building application..."
 ./gradlew bootJar --no-daemon -x test
 
-# アプリケーションの起動（バックグラウンドで実行）
-echo "Starting application..."
+# Cloud SQL (PostgreSQL) プライベート IP で接続
+echo "Starting application (Cloud SQL: ${google_sql_database_instance.blog.private_ip_address})..."
 nohup java -jar build/libs/*.jar \
   --spring.profiles.active=production \
-  --spring.datasource.url=jdbc:postgresql://localhost:5432/blogdb \
+  --spring.datasource.url=jdbc:postgresql://${google_sql_database_instance.blog.private_ip_address}:5432/blogdb \
   --spring.datasource.username=uso8 \
-  --spring.datasource.password=password \
+  --spring.datasource.password=${var.db_password} \
   > /var/log/blog-app.log 2>&1 &
 
-# 起動確認（最大60秒待機）
 echo "Waiting for application to start..."
-for i in {1..60}; do
-  if curl -f http://localhost:8080 > /dev/null 2>&1; then
+for i in $(seq 1 90); do
+  if curl -sf http://localhost:8080 > /dev/null 2>&1; then
     echo "Application started successfully!"
     break
   fi
@@ -90,14 +64,19 @@ for i in {1..60}; do
 done
 
 echo "=== Setup completed at $(date) ==="
-EOF
+EOS
 }
 
-# Compute Engine インスタンス
+# Compute Engine インスタンス（Cloud SQL 作成後に起動）
 resource "google_compute_instance" "blog_app" {
   name         = "wiz-dev-blog-app"
   machine_type = "e2-standard-2"
   zone         = "${var.region}-a"
+
+  depends_on = [
+    google_sql_database.blogdb,
+    google_sql_user.uso8,
+  ]
 
   boot_disk {
     initialize_params {
