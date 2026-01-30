@@ -128,7 +128,7 @@ resource "google_compute_firewall" "allow_http_https_instance" {
 # Outputs
 output "blog_app_external_ip" {
   value       = google_compute_address.blog_app.address
-  description = "Blog アプリケーションの外部 IP アドレス（http://<this>:8080 でアクセス可能）"
+  description = "VM の外部 IP（SSH 用）。アプリはロードバランサ経由（blog_lb_ip:80）でアクセス"
 }
 
 output "blog_app_instance_name" {
